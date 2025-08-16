@@ -108,7 +108,7 @@ VITE_FIREBASE_APP_ID=your_app_id
 ### Backend (server/.env)
 ```
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/campusone
+MONGODB_URI=mongodb://localhost:27017/campusone or your mongodb atlas url
 JWT_SECRET=your_jwt_secret
 GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 FIREBASE_PROJECT_ID=your_firebase_project_id

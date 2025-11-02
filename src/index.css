@@ -1,0 +1,23 @@
+/* src/index.css */
+
+/*
+  IMPORTANT: All @import rules for custom CSS files MUST come first,
+  before any @tailwind directives or other CSS declarations.
+*/
+@import './styles/global.css';
+@import './styles/main.css';
+
+/*
+  Tailwind CSS Directives:
+  These are special PostCSS directives that Tailwind processes
+  to inject its base styles, component styles, and utility classes.
+  DO NOT use @import "tailwindcss/base"; etc.
+*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Small app-scope overrides (if needed) */
+html, body, #root {
+  height: 100%;
+}

@@ -147,57 +147,65 @@ export default function TimetablePlanner() {
       </div>
 
       {/* Weekly Schedule Card */}
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle>Weekly Schedule</CardTitle>
+      <Card className="glass-card shadow-lg">
+        <CardHeader className="border-b border-[var(--border)]">
+          <CardTitle className="text-xl">Weekly Schedule</CardTitle>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
-          <div className="min-w-[800px]">
-            <div className="grid grid-cols-6 border-b border-[var(--border)]">
-              <div className="p-4 text-[var(--muted-foreground)]">Time</div>
-              {weekDays.map((day) => (
-                <div key={day} className="p-4 border-l border-[var(--border)] text-center font-medium">{day}</div>
+        <CardContent className="overflow-x-auto p-0">
+          <div className="min-w-[1000px]">
+            <div className="grid grid-cols-6 border-b-2 border-[var(--border)] bg-[var(--primary)] text-white sticky top-0 z-10">
+              <div className="p-4 font-semibold text-center border-r border-white/20">Time</div>
+              {weekDays.map((day, idx) => (
+                <div key={day} className={`p-4 text-center font-semibold ${idx < weekDays.length - 1 ? 'border-r border-white/20' : ''}`}>{day}</div>
               ))}
             </div>
-            {timeSlots.map((time) => (
-              <div key={time} className="grid grid-cols-6 border-b border-[var(--border)] min-h-[80px]">
-                <div className="p-4 bg-[var(--muted)]/30 font-medium">{time}</div>
-                {weekDays.map((day) => {
+            {timeSlots.map((time, tidx) => (
+              <div key={time} className={`grid grid-cols-6 ${tidx < timeSlots.length - 1 ? 'border-b' : ''} border-[var(--border)] min-h-[100px]`}>
+                <div className="p-4 bg-[var(--muted)] font-medium text-[var(--muted-foreground)] flex items-center justify-center border-r border-[var(--border)]">{time}</div>
+                {weekDays.map((day, didx) => {
                   const classes = getClassesForSlot(day, time);
                   return (
-                    <div key={day + time} className="border-l border-[var(--border)] relative p-2">
+                    <div key={day + time} className={`${didx < weekDays.length - 1 ? 'border-r' : ''} border-[var(--border)] relative p-2 bg-[var(--background)] hover:bg-[var(--accent)] transition-colors`}>
                       {classes.map((cls) => (
-                        <div key={cls._id} className="timetable-class-block bg-[var(--primary)]/10 border-l-4 border-[var(--primary)] p-2 rounded relative hover-lift">
+                        <div key={cls._id} className="timetable-class-block bg-gradient-to-br from-[var(--primary)]/20 to-[var(--primary)]/10 border-l-4 border-[var(--primary)] p-3 rounded-lg shadow-sm relative hover:shadow-md transition-all duration-200 mb-2">
                           {cls.conflict && (
-                            <AlertTriangle className="absolute top-1 right-1 w-4 h-4 text-red-600" />
+                            <AlertTriangle className="absolute top-2 right-2 w-4 h-4 text-red-600" />
                           )}
-                          <div className="text-xs font-semibold">{cls.course?.title || "Course"}</div>
-                          <div className="font-medium text-sm">{cls.instructor}</div>
-                          <div className="text-xs text-[var(--muted-foreground)]">Room {cls.room}</div>
-                          <div className="text-xs flex justify-between">
-                            <span>
+                          <div className="text-xs font-semibold text-[var(--primary)] mb-1">{cls.course?.courseCode || "CODE"}</div>
+                          <div className="font-semibold text-sm text-[var(--foreground)] mb-1">{cls.course?.title || "Course"}</div>
+                          <div className="text-xs text-[var(--muted-foreground)] mb-1">
+                            <span className="inline-flex items-center gap-1">
+                              <span className="font-medium">{cls.instructor}</span>
+                            </span>
+                          </div>
+                          <div className="text-xs text-[var(--muted-foreground)] mb-1">
+                            📍 {cls.room}
+                          </div>
+                          <div className="text-xs flex justify-between items-center mt-2 pt-2 border-t border-[var(--border)]">
+                            <span className="font-medium text-[var(--foreground)]">
                               {cls.startTime} - {cls.endTime}
                             </span>
-                            <span className="text-[var(--muted-foreground)]">{cls.semester} {cls.academicYear}</span>
                           </div>
-                          <div className="absolute top-2 right-2 flex gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => openEditModal(cls)} title="Edit">
+                          <div className="absolute top-2 right-2 flex gap-1 opacity-0 hover:opacity-100 transition-opacity bg-white/90 rounded-md p-1">
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEditModal(cls)} title="Edit">
                               <Edit3 className="w-3 h-3" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDelete(cls)} title="Delete">
-                              <Trash2 className="w-3 h-3" />
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleDelete(cls)} title="Delete">
+                              <Trash2 className="w-3 h-3 text-red-600" />
                             </Button>
                           </div>
                         </div>
                       ))}
                       {classes.length === 0 && (
-                        <div className="h-full flex items-center justify-center opacity-0 hover:opacity-100">
+                        <div className="h-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="text-[var(--muted-foreground)] hover:text-[var(--primary)]"
                             onClick={() => openAddModal({ dayOfWeek: day, startTime: time })}
                           >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add Class
                           </Button>
                         </div>
                       )}
@@ -211,17 +219,19 @@ export default function TimetablePlanner() {
       </Card>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-full max-w-lg mx-4">
-            <CardHeader>
-              <CardTitle>{editingEntry ? "Edit Timetable Entry" : "Add Timetable Entry"}</CardTitle>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <CardHeader className="border-b border-[var(--border)]">
+              <CardTitle className="text-xl font-semibold">
+                {editingEntry ? "Edit Timetable Entry" : "Add Timetable Entry"}
+              </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <form className="grid grid-cols-1 sm:grid-cols-2 gap-4" onSubmit={handleSubmit}>
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Course</label>
+                  <label className="block text-sm font-medium mb-2 text-[var(--foreground)]">Course *</label>
                   <select
-                    className="w-full px-3 py-2 border rounded"
+                    className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                     value={formData.course}
                     onChange={(e) => setFormData({ ...formData, course: e.target.value })}
                     required
@@ -238,9 +248,9 @@ export default function TimetablePlanner() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Day</label>
+                  <label className="block text-sm font-medium mb-2 text-[var(--foreground)]">Day *</label>
                   <select
-                    className="w-full px-3 py-2 border rounded"
+                    className="w-full px-3 py-2 border border-[var(--border)] rounded-lg bg-[var(--background)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                     value={formData.dayOfWeek}
                     onChange={(e) => setFormData({ ...formData, dayOfWeek: e.target.value })}
                   >
@@ -253,17 +263,31 @@ export default function TimetablePlanner() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Start Time</label>
+                  <label className="block text-sm font-medium mb-2 text-[var(--foreground)]">Room *</label>
                   <Input
+                    className="border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]"
+                    placeholder="e.g., Room 101"
+                    value={formData.room}
+                    onChange={(e) => setFormData({ ...formData, room: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-[var(--foreground)]">Start Time *</label>
+                  <Input
+                    className="border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]"
                     placeholder="e.g., 9:00 AM"
                     value={formData.startTime}
                     onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
                     required
                   />
                 </div>
+                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">End Time</label>
+                  <label className="block text-sm font-medium mb-2 text-[var(--foreground)]">End Time *</label>
                   <Input
+                    className="border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]"
                     placeholder="e.g., 10:30 AM"
                     value={formData.endTime}
                     onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
@@ -272,16 +296,10 @@ export default function TimetablePlanner() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Room</label>
+                  <label className="block text-sm font-medium mb-2 text-[var(--foreground)]">Instructor *</label>
                   <Input
-                    value={formData.room}
-                    onChange={(e) => setFormData({ ...formData, room: e.target.value })}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Instructor</label>
-                  <Input
+                    className="border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]"
+                    placeholder="e.g., Dr. Smith"
                     value={formData.instructor}
                     onChange={(e) => setFormData({ ...formData, instructor: e.target.value })}
                     required
@@ -289,17 +307,20 @@ export default function TimetablePlanner() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Semester</label>
+                  <label className="block text-sm font-medium mb-2 text-[var(--foreground)]">Semester *</label>
                   <Input
-                    placeholder="e.g., Fall"
+                    className="border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]"
+                    placeholder="e.g., Fall 2025"
                     value={formData.semester}
                     onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
                     required
                   />
                 </div>
+                
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Academic Year</label>
+                  <label className="block text-sm font-medium mb-2 text-[var(--foreground)]">Academic Year *</label>
                   <Input
+                    className="border-[var(--border)] bg-[var(--background)] text-[var(--foreground)]"
                     placeholder="e.g., 2024/2025"
                     value={formData.academicYear}
                     onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
@@ -313,13 +334,18 @@ export default function TimetablePlanner() {
                     type="checkbox"
                     checked={!!formData.isActive}
                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                    className="w-4 h-4 rounded border-[var(--border)] text-[var(--primary)] focus:ring-[var(--primary)]"
                   />
-                  <label htmlFor="isActive" className="text-sm text-gray-700">Active</label>
+                  <label htmlFor="isActive" className="text-sm text-[var(--foreground)]">Active</label>
                 </div>
 
-                <div className="sm:col-span-2 flex gap-2 mt-2">
-                  <Button type="submit" className="flex-1">{editingEntry ? "Update" : "Create"}</Button>
-                  <Button type="button" variant="outline" className="flex-1" onClick={closeModal}>Cancel</Button>
+                <div className="sm:col-span-2 flex gap-3 mt-4">
+                  <Button type="submit" className="flex-1">
+                    {editingEntry ? "Update Entry" : "Create Entry"}
+                  </Button>
+                  <Button type="button" variant="outline" className="flex-1" onClick={closeModal}>
+                    Cancel
+                  </Button>
                 </div>
               </form>
             </CardContent>

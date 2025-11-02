@@ -3,7 +3,9 @@ const router = express.Router();
 const Conversation = require('../models/Conversation');
 const Message = require('../models/Message');
 const User = require('../models/User');
+const Course = require('../models/Course');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
+const { syncCourseConversation } = require('../utils/courseConversation');
 
 // All routes here require auth
 router.use(authenticateToken);
@@ -12,9 +14,19 @@ router.use(authenticateToken);
 router.get('/conversations', async (req, res) => {
   try {
     const uid = req.user.firebaseUid;
-    const conversations = await Conversation.find({ participants: uid })
-      .sort({ lastMessageAt: -1 })
-      .lean();
+    
+    // Check if user is admin - only admins can see ALL conversations
+    const currentUser = await User.findOne({ firebaseUid: uid });
+    const isAdmin = currentUser && currentUser.role === 'admin';
+    
+    // If admin, get ALL conversations. Otherwise, only their own
+    const conversations = isAdmin
+      ? await Conversation.find({})
+          .sort({ lastMessageAt: -1 })
+          .lean()
+      : await Conversation.find({ participants: uid })
+          .sort({ lastMessageAt: -1 })
+          .lean();
 
     const conversationIds = conversations.map((conv) => conv._id);
 
@@ -141,6 +153,23 @@ router.get('/conversations', async (req, res) => {
 router.get('/conversations/:id/messages', async (req, res) => {
   try {
     const convId = req.params.id;
+    const uid = req.user.firebaseUid;
+    
+    // Check if user has access to this conversation
+    const conversation = await Conversation.findById(convId);
+    if (!conversation) {
+      return res.status(404).json({ message: 'Conversation not found' });
+    }
+    
+    // Check if user is admin (can see all) or is a participant
+    const currentUser = await User.findOne({ firebaseUid: uid });
+    const isAdmin = currentUser && currentUser.role === 'admin';
+    const isParticipant = conversation.participants.includes(uid);
+    
+    if (!isAdmin && !isParticipant) {
+      return res.status(403).json({ message: 'Access denied to this conversation' });
+    }
+    
     const messages = await Message.find({ conversationId: convId }).sort({ timestamp: 1 }).lean();
 
     const senderUids = [...new Set(messages.map((msg) => msg.senderUid).filter(Boolean))];
@@ -184,7 +213,8 @@ router.get('/conversations/:id/messages', async (req, res) => {
 // Create conversation (teacher only)
 router.post('/conversations', authorizeRole('teacher'), async (req, res) => {
   try {
-    let { participants = [], participantsEmails = [], type = 'group', name = '' } = req.body;
+    let { participants = [], participantsEmails = [], type = 'group', name = '', description = '', courseId = null } = req.body;
+    
     // Normalize inputs
     participants = Array.isArray(participants) ? participants : [];
     participantsEmails = Array.isArray(participantsEmails) ? participantsEmails : [];
@@ -204,10 +234,61 @@ router.post('/conversations', authorizeRole('teacher'), async (req, res) => {
     participants = Array.from(new Set(participants)).filter(Boolean);
     if (!participants.length) return res.status(400).json({ message: 'Participants required' });
 
-    const conv = await Conversation.create({ participants, type, name });
+    // If courseId provided, sync course conversation instead
+    if (courseId) {
+      const course = await Course.findById(courseId);
+      if (!course) return res.status(404).json({ message: 'Course not found' });
+      
+      const conversation = await syncCourseConversation(courseId);
+      return res.status(201).json(conversation);
+    }
+
+    const conv = await Conversation.create({ 
+      participants, 
+      type, 
+      name,
+      description,
+      groupInfo: `${participants.length} member${participants.length === 1 ? '' : 's'}`
+    });
+    
     res.status(201).json(conv);
   } catch (err) {
     res.status(400).json({ message: err.message });
+  }
+});
+
+// Sync all course conversations (teacher only) - useful for batch updates
+router.post('/conversations/sync-courses', authorizeRole('teacher'), async (req, res) => {
+  try {
+    const courses = await Course.find({ status: 'Active' });
+    const results = [];
+    
+    for (const course of courses) {
+      try {
+        const conversation = await syncCourseConversation(course._id);
+        results.push({
+          courseId: course._id,
+          courseTitle: course.title,
+          conversationId: conversation?._id,
+          status: 'success'
+        });
+      } catch (error) {
+        results.push({
+          courseId: course._id,
+          courseTitle: course.title,
+          status: 'failed',
+          error: error.message
+        });
+      }
+    }
+    
+    res.json({ 
+      message: 'Course conversations synced', 
+      total: courses.length,
+      results 
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 

@@ -1,26 +1,70 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  BookOpen, Users, Calendar, MessageCircle, MapPin,
-  CreditCard, FileText, Bot, Bell, TrendingUp, Clock, CheckCircle
+  BookOpen, Users, Calendar, MessageCircle, CheckSquare,
+  Bot, Bell, TrendingUp, Clock, CheckCircle
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
+import api from '../services/api';
 
 const moduleCards = [
-  { id: 'courses', title: 'Courses', icon: BookOpen, description: '12 Active Courses', status: 'success', alert: '3 new assignments', color: 'bg-blue-500', route: '/courses' },
-  { id: 'students', title: 'Students', icon: Users, description: '1,247 Enrolled', status: 'success', alert: '24 pending approvals', color: 'bg-green-500', route: '/students' },
-  { id: 'timetable', title: 'Timetable', icon: Calendar, description: 'Current Week', status: 'warning', alert: '2 conflicts detected', color: 'bg-orange-500', route: '/timetable' },
-  { id: 'chat', title: 'Messages', icon: MessageCircle, description: '47 Conversations', status: 'success', alert: '12 unread messages', color: 'bg-purple-500', route: '/chat' },
-  { id: 'attendance', title: 'Attendance', icon: MapPin, description: 'Live Tracking', status: 'success', alert: '89% average rate', color: 'bg-teal-500', route: '/attendance' },
-  { id: 'payments', title: 'Payments', icon: CreditCard, description: 'Fee Management', status: 'warning', alert: '156 pending fees', color: 'bg-red-500', route: '/payments' },
-  { id: 'exams', title: 'Examinations', icon: FileText, description: 'Upcoming Tests', status: 'info', alert: '5 exams this week', color: 'bg-indigo-500', route: '/exams' },
-  { id: 'ai-assistant', title: 'AI Assistant', icon: Bot, description: 'Smart Helper', status: 'success', alert: 'Ready to assist', color: 'bg-pink-500', route: '/ai-assistant' }
+  { id: 'courses', title: 'Courses', icon: BookOpen, status: 'success', color: 'bg-blue-500', route: '/courses' },
+  { id: 'students', title: 'Students', icon: Users, status: 'success', color: 'bg-green-500', route: '/students' },
+  { id: 'timetable', title: 'Timetable', icon: Calendar, status: 'warning', color: 'bg-orange-500', route: '/timetable' },
+  { id: 'chat', title: 'Messages', icon: MessageCircle, status: 'success', color: 'bg-purple-500', route: '/chat' },
+  { id: 'attendance', title: 'Attendance', icon: CheckSquare, status: 'success', color: 'bg-teal-500', route: '/attendance-manage' },
+  { id: 'ai-assistant', title: 'AI Assistant', icon: Bot, status: 'success', color: 'bg-pink-500', route: '/ai-assistant' }
 ];
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    activeCourses: 0,
+    totalStudents: 0,
+    totalConversations: 0,
+    attendanceRate: 0,
+    loading: true
+  });
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        const [coursesRes, studentsRes, conversationsRes, attendanceRes] = await Promise.allSettled([
+          api.getCourses(),
+          api.getStudents(),
+          api.getConversations(),
+          api.getAttendance()
+        ]);
+
+        const courses = coursesRes.status === 'fulfilled' ? coursesRes.value : [];
+        const students = studentsRes.status === 'fulfilled' ? studentsRes.value : [];
+        const conversations = conversationsRes.status === 'fulfilled' ? conversationsRes.value : [];
+        const attendance = attendanceRes.status === 'fulfilled' ? attendanceRes.value : [];
+
+        // Calculate attendance rate
+        let attendanceRate = 0;
+        if (attendance.length > 0) {
+          const presentCount = attendance.filter(a => a.status === 'present').length;
+          attendanceRate = Math.round((presentCount / attendance.length) * 100);
+        }
+
+        setStats({
+          activeCourses: courses.length || 0,
+          totalStudents: students.length || 0,
+          totalConversations: conversations.length || 0,
+          attendanceRate: attendanceRate,
+          loading: false
+        });
+      } catch (error) {
+        console.error('Failed to fetch dashboard stats:', error);
+        setStats(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    fetchDashboardStats();
+  }, []);
 
   const handleNavigate = (card) => {
     if (!card.route) return;
@@ -49,15 +93,15 @@ export default function Dashboard() {
         <div className="stat-card glass-card hover-lift">
           <div className="stat-icon primary"><TrendingUp /></div>
           <div className="stat-content">
-            <div className="stat-value">94.2%</div>
-            <div className="stat-label">Overall Performance</div>
+            <div className="stat-value">{stats.loading ? '...' : `${stats.totalConversations}`}</div>
+            <div className="stat-label">Total Conversations</div>
           </div>
         </div>
 
         <div className="stat-card glass-card hover-lift">
           <div className="stat-icon accent"><Users /></div>
           <div className="stat-content">
-            <div className="stat-value">1,247</div>
+            <div className="stat-value">{stats.loading ? '...' : stats.totalStudents}</div>
             <div className="stat-label">Active Students</div>
           </div>
         </div>
@@ -65,7 +109,7 @@ export default function Dashboard() {
         <div className="stat-card glass-card hover-lift">
           <div className="stat-icon success"><Clock /></div>
           <div className="stat-content">
-            <div className="stat-value">12</div>
+            <div className="stat-value">{stats.loading ? '...' : stats.activeCourses}</div>
             <div className="stat-label">Active Courses</div>
           </div>
         </div>
@@ -73,7 +117,7 @@ export default function Dashboard() {
         <div className="stat-card glass-card hover-lift">
           <div className="stat-icon info"><CheckCircle /></div>
           <div className="stat-content">
-            <div className="stat-value">89%</div>
+            <div className="stat-value">{stats.loading ? '...' : `${stats.attendanceRate}%`}</div>
             <div className="stat-label">Attendance Rate</div>
           </div>
         </div>
@@ -82,6 +126,40 @@ export default function Dashboard() {
       <div className="module-grid">
         {moduleCards.map(m => {
           const Icon = m.icon;
+          let description = '';
+          let alert = '';
+
+          // Dynamic descriptions and alerts based on real data
+          switch (m.id) {
+            case 'courses':
+              description = `${stats.activeCourses} Active Courses`;
+              alert = stats.activeCourses > 0 ? 'View all courses' : 'No courses yet';
+              break;
+            case 'students':
+              description = `${stats.totalStudents} Enrolled`;
+              alert = stats.totalStudents > 0 ? `${stats.totalStudents} total students` : 'No students yet';
+              break;
+            case 'timetable':
+              description = 'Current Week';
+              alert = 'Manage schedule';
+              break;
+            case 'chat':
+              description = `${stats.totalConversations} Conversations`;
+              alert = stats.totalConversations > 0 ? 'Check messages' : 'No conversations';
+              break;
+            case 'attendance':
+              description = 'Live Tracking';
+              alert = `${stats.attendanceRate}% average rate`;
+              break;
+            case 'ai-assistant':
+              description = 'Smart Helper';
+              alert = 'Ready to assist';
+              break;
+            default:
+              description = m.title;
+              alert = 'Available';
+          }
+
           return (
             <div key={m.id} className="module-card glass-card hover-lift" onClick={() => handleNavigate(m)}>
               <div className="module-header">
@@ -92,10 +170,10 @@ export default function Dashboard() {
               </div>
               <div className="module-content">
                 <h3>{m.title}</h3>
-                <p>{m.description}</p>
+                <p>{description}</p>
                 <div className="module-alert">
                   <div className="alert-dot" />
-                  <span>{m.alert}</span>
+                  <span>{alert}</span>
                 </div>
               </div>
             </div>

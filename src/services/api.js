@@ -108,14 +108,44 @@ class ApiService {
     return this.apiCall(`/attendance/student/${studentId}`);
   }
 
-  async getCourseAttendance(courseId) {
-    return this.apiCall(`/attendance/course/${courseId}`);
+  async getStudentAttendanceStats(studentId, courseId = null) {
+    const params = courseId ? `?courseId=${courseId}` : '';
+    return this.apiCall(`/attendance/student/${studentId}/stats${params}`);
+  }
+
+  async getCourseAttendance(courseId, date = null) {
+    const params = date ? `?date=${date}` : '';
+    return this.apiCall(`/attendance/course/${courseId}${params}`);
+  }
+
+  async getCourseAttendanceStats(courseId) {
+    return this.apiCall(`/attendance/course/${courseId}/stats`);
   }
 
   async markAttendance(attendanceData) {
     return this.apiCall('/attendance', {
       method: 'POST',
       body: JSON.stringify(attendanceData),
+    });
+  }
+
+  async markBulkAttendance(bulkData) {
+    return this.apiCall('/attendance/bulk', {
+      method: 'POST',
+      body: JSON.stringify(bulkData),
+    });
+  }
+
+  async updateAttendance(id, attendanceData) {
+    return this.apiCall(`/attendance/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(attendanceData),
+    });
+  }
+
+  async deleteAttendance(id) {
+    return this.apiCall(`/attendance/${id}`, {
+      method: 'DELETE',
     });
   }
 
@@ -166,6 +196,24 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(message),
     });
+  }
+
+  async createConversation(conversationData) {
+    return this.apiCall('/conversations', {
+      method: 'POST',
+      body: JSON.stringify(conversationData),
+    });
+  }
+
+  async syncCourseConversations() {
+    return this.apiCall('/conversations/sync-courses', {
+      method: 'POST',
+    });
+  }
+
+  // Users API
+  async getUsers() {
+    return this.apiCall('/users');
   }
 }
 

@@ -812,3 +812,32 @@ p {
     width: 100%;
   }
 }
+
+/* Timetable specific styles */
+.timetable-class-block {
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.timetable-class-block:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.timetable-class-block .absolute {
+  transition: opacity 0.2s ease-in-out;
+}
+
+@media print {
+  .timetable-class-block .absolute {
+    display: none !important;
+  }
+  
+  .sidebar {
+    display: none;
+  }
+  
+  .page-header {
+    display: none;
+  }
+}

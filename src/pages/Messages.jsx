@@ -3,6 +3,7 @@ import { Send, Paperclip, Smile, Search, Users, Phone, Video, MoreVertical, Plus
 import { useAuth } from '../context/AuthContext';
 import { toast } from '../components/Toast';
 import api from '../services/api';
+import CreateConversationModal from '../components/CreateConversationModal';
 
 function getInitials(name) {
   if (!name) return 'U';
@@ -69,7 +70,7 @@ function formatPresence(date) {
 }
 
 export default function Messages() {
-  const { userUid } = useAuth();
+  const { userUid, userRole } = useAuth();
   const [conversations, setConversations] = useState([]);
   const [selectedConversationId, setSelectedConversationId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -77,6 +78,7 @@ export default function Messages() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const messagesEndRef = useRef(null);
 
   async function fetchConversations() {
@@ -229,11 +231,24 @@ export default function Messages() {
   }
 
   function handleCreateConversation() {
-    toast.info('Conversation creation will be available soon');
+    if (userRole !== 'teacher') {
+      toast.error('Only teachers can create conversations');
+      return;
+    }
+    setShowCreateModal(true);
+  }
+
+  async function handleConversationCreated() {
+    await fetchConversations();
   }
 
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] bg-[#060913] text-slate-100">
+      <CreateConversationModal 
+        isOpen={showCreateModal} 
+        onClose={() => setShowCreateModal(false)} 
+        onCreated={handleConversationCreated}
+      />
       <div className="px-6 py-6 border-b border-white/5 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.18),_transparent_70%)]">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex items-center gap-3">

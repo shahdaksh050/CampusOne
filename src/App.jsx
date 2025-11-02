@@ -10,6 +10,7 @@ import StudentRoster from './pages/StudentRoster';
 import TimetablePlanner from './pages/TimetablePlanner';
 import Messages from './pages/Messages';
 import AttendanceMap from './pages/AttendanceMap';
+import AttendancePage from './pages/AttendancePage';
 import UserProfilePage from './pages/UserProfilePage';
 import AuthPage from './pages/AuthPage';
 
@@ -25,19 +26,8 @@ function RouterConfig() {
           <Route path="courses" element={<CourseManagement />} />
           <Route path="timetable" element={<TimetablePlanner />} />
           <Route path="chat" element={<Messages />} />
-          <Route path="attendance" element={<AttendanceMap />} />
-          <Route path="payments" element={(
-            <div className="p-6">
-              <h1 className="text-2xl font-bold">Payment Management</h1>
-              <p className="text-muted">Coming soon...</p>
-            </div>
-          )} />
-          <Route path="exams" element={(
-            <div className="p-6">
-              <h1 className="text-2xl font-bold">Examination System</h1>
-              <p className="text-muted">Coming soon...</p>
-            </div>
-          )} />
+          <Route path="attendance" element={<AttendancePage />} />
+          <Route path="attendance-manage" element={<AttendancePage />} />
           <Route path="ai-assistant" element={(
             <div className="p-6">
               <h1 className="text-2xl font-bold">AI Assistant</h1>

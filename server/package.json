@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "preflight": "node preflight.js",
+    "start:preflight": "node preflight.js && npm start"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
@@ -20,5 +22,9 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
+  }
+  ,
+  "engines": {
+    "node": ">=18"
   }
 }

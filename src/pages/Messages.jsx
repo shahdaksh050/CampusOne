@@ -243,36 +243,36 @@ export default function Messages() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] bg-[#060913] text-slate-100">
+    <div className="flex flex-col h-[calc(100vh-64px)] bg-[var(--background)] text-[var(--foreground)]">
       <CreateConversationModal 
         isOpen={showCreateModal} 
         onClose={() => setShowCreateModal(false)} 
         onCreated={handleConversationCreated}
       />
-      <div className="px-6 py-6 border-b border-white/5 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.18),_transparent_70%)]">
+      <div className="px-6 py-6 border-b border-[var(--border)] bg-gradient-to-r from-[var(--card)] to-[var(--secondary)]">
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-300">
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--primary)]/20 text-[var(--primary)] border border-[var(--primary)]/30">
               <Sparkles className="w-5 h-5" />
             </span>
             <div>
-              <h1 className="text-2xl font-semibold text-white">Messages</h1>
-              <p className="text-sm text-slate-400 mt-1">Communicate with professors and study groups</p>
+              <h1 className="text-2xl font-semibold text-[var(--foreground)]">Messages</h1>
+              <p className="text-sm text-[var(--muted-foreground)] mt-1">Communicate with professors and study groups</p>
             </div>
           </div>
           <div className="flex items-center gap-6 text-sm">
             <div className="text-right">
-              <p className="text-2xl font-semibold text-white">{totalUnread}</p>
-              <p className="text-xs uppercase tracking-widest text-slate-400">Unread</p>
+              <p className="text-2xl font-semibold text-[var(--foreground)]">{totalUnread}</p>
+              <p className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">Unread</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-semibold text-white">{onlineCount}</p>
-              <p className="text-xs uppercase tracking-widest text-slate-400">Online</p>
+              <p className="text-2xl font-semibold text-[var(--foreground)]">{onlineCount}</p>
+              <p className="text-xs uppercase tracking-widest text-[var(--muted-foreground)]">Online</p>
             </div>
             <button
               type="button"
               onClick={handleCreateConversation}
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-400 to-cyan-400 px-4 py-2 text-sm font-semibold text-black shadow-[0_8px_30px_rgba(34,211,238,0.35)] transition-shadow hover:shadow-[0_10px_38px_rgba(34,211,238,0.45)]"
+              className="inline-flex items-center gap-2 rounded-lg bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary-foreground)] shadow-lg hover:opacity-90 transition-all"
             >
               <Plus className="w-4 h-4" />
               New chat
@@ -282,14 +282,14 @@ export default function Messages() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="w-96 border-r border-white/5 bg-[#070c17] flex flex-col">
-          <div className="p-5 border-b border-white/5">
+        <aside className="w-96 border-r border-[var(--border)] bg-[var(--card)] flex flex-col">
+          <div className="p-5 border-b border-[var(--border)]">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--muted-foreground)]" />
               <input
                 type="search"
                 placeholder="Search conversations..."
-                className="w-full h-11 pl-10 pr-4 rounded-lg bg-[#0c1324] border border-white/5 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-400/50"
+                className="w-full h-11 pl-10 pr-4 rounded-lg bg-[var(--input-background)] border border-[var(--border)] text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all"
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
               />
@@ -298,9 +298,9 @@ export default function Messages() {
 
           <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-3">
             {loadingConversations ? (
-              <div className="flex justify-center items-center h-full text-slate-500">Loading conversations...</div>
+              <div className="flex justify-center items-center h-full text-[var(--muted-foreground)]">Loading conversations...</div>
             ) : filteredConversations.length === 0 ? (
-              <div className="p-8 text-center text-slate-500">No conversations found</div>
+              <div className="p-8 text-center text-[var(--muted-foreground)]">No conversations found</div>
             ) : (
               filteredConversations.map((conversation) => {
                 const isActive = selectedConversationId === conversation._id;
@@ -313,48 +313,48 @@ export default function Messages() {
                     type="button"
                     key={conversation._id}
                     onClick={() => setSelectedConversationId(conversation._id)}
-                    className={`group w-full text-left rounded-2xl border transition-all ${
+                    className={`group w-full text-left rounded-xl border transition-all ${
                       isActive
-                        ? 'border-emerald-400/60 bg-gradient-to-r from-emerald-500/15 via-transparent to-cyan-500/10 shadow-[0_10px_45px_-25px_rgba(16,185,129,0.95)]'
-                        : 'border-white/5 bg-[#0c1324]/70 hover:border-emerald-400/30 hover:bg-[#101a33]'
+                        ? 'border-[var(--primary)] bg-[var(--primary)]/10 shadow-lg'
+                        : 'border-[var(--border)] bg-[var(--secondary)] hover:border-[var(--primary)]/50 hover:bg-[var(--secondary)]/80'
                     }`}
                   >
                     <div className="p-4 flex items-start gap-3">
                       <div className="relative">
                         <div
-                          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow-inner"
+                          className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold shadow-lg"
                           style={{ background: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})` }}
                         >
                           {conversation.type === 'group' ? <Users className="w-5 h-5" /> : getInitials(conversation.title)}
                         </div>
                         {conversation.online && (
-                          <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-[#0c1324]" />
+                          <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-[var(--card)]" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
-                            <h4 className="font-semibold text-white truncate">
+                            <h4 className="font-semibold text-[var(--foreground)] truncate">
                               {conversation.title || 'Untitled Conversation'}
                             </h4>
-                            <p className="text-sm text-slate-400 truncate mt-1">
+                            <p className="text-sm text-[var(--muted-foreground)] truncate mt-1">
                               {conversation.lastMessage?.sender?.name ? `${conversation.lastMessage.sender.name}: ` : ''}
                               {conversation.preview || 'No messages yet'}
                             </p>
                           </div>
-                          <span className="text-xs text-slate-500 whitespace-nowrap">
+                          <span className="text-xs text-[var(--muted-foreground)] whitespace-nowrap">
                             {formatTime(conversation.lastMessage?.timestamp || conversation.lastMessageAt)}
                           </span>
                         </div>
                         <div className="flex items-center gap-2 mt-3 text-xs">
                           {conversation.courseTag && (
-                            <span className="px-2 py-0.5 rounded-md bg-emerald-400/15 text-emerald-300 font-medium">
+                            <span className="px-2 py-0.5 rounded-md bg-[var(--primary)]/20 text-[var(--primary)] font-medium border border-[var(--primary)]/30">
                               {conversation.courseTag}
                             </span>
                           )}
-                          {conversation.groupInfo && <span className="text-slate-500">{conversation.groupInfo}</span>}
+                          {conversation.groupInfo && <span className="text-[var(--muted-foreground)]">{conversation.groupInfo}</span>}
                           {unreadCount > 0 && (
-                            <span className="ml-auto w-6 h-6 rounded-full bg-emerald-400/90 text-black text-xs font-bold flex items-center justify-center">
+                            <span className="ml-auto w-6 h-6 rounded-full bg-[var(--primary)] text-[var(--primary-foreground)] text-xs font-bold flex items-center justify-center">
                               {unreadCount}
                             </span>
                           )}
@@ -368,14 +368,14 @@ export default function Messages() {
           </div>
         </aside>
 
-        <section className="flex-1 bg-[#050913] flex flex-col">
+        <section className="flex-1 bg-[var(--background)] flex flex-col">
           {selectedConversation ? (
             <>
-              <header className="h-24 border-b border-white/5 bg-[#0b1426]/80 px-6 flex items-center justify-between shadow-[0_20px_60px_-40px_rgba(16,185,129,0.65)]">
+              <header className="h-24 border-b border-[var(--border)] bg-[var(--card)] px-6 flex items-center justify-between shadow-lg">
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     <div
-                      className="w-14 h-14 rounded-full flex items-center justify-center text-white font-semibold shadow-[0_0_0_4px_rgba(12,19,36,0.9)]"
+                      className="w-14 h-14 rounded-full flex items-center justify-center text-white font-semibold shadow-lg"
                       style={{
                         background: `linear-gradient(135deg, ${selectedConversation.avatarColor || '#06b6d4'}, ${
                           selectedConversation.avatarColor2 || '#3b82f6'
@@ -389,15 +389,15 @@ export default function Messages() {
                       )}
                     </div>
                     {(selectedConversation.online || selectedConversation.type === 'private') && (
-                      <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-[#0b1426] bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.75)]" />
+                      <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-[var(--card)] bg-green-400 shadow-lg" />
                     )}
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold text-white">{selectedConversation.title}</h2>
-                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-[var(--foreground)]">{selectedConversation.title}</h2>
+                    <p className="text-xs text-[var(--muted-foreground)] mt-1 flex items-center gap-2">
                       <span>{conversationSubtitle}</span>
                       {conversationPresence && (
-                        <span className="flex items-center gap-1 text-emerald-300/80">
+                        <span className="flex items-center gap-1 text-[var(--primary)]">
                           <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-300" />
                           {conversationPresence}
                         </span>
@@ -405,24 +405,24 @@ export default function Messages() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 text-slate-300">
-                  <button className="w-10 h-10 rounded-full border border-white/10 hover:bg-white/10 flex items-center justify-center transition-colors" title="Start a call">
+                <div className="flex items-center gap-3 text-[var(--muted-foreground)]">
+                  <button className="w-10 h-10 rounded-full border border-[var(--border)] hover:bg-[var(--secondary)] flex items-center justify-center transition-colors" title="Start a call">
                     <Phone className="w-4 h-4" />
                   </button>
-                  <button className="w-10 h-10 rounded-full border border-white/10 hover:bg-white/10 flex items-center justify-center transition-colors" title="Start a video call">
+                  <button className="w-10 h-10 rounded-full border border-[var(--border)] hover:bg-[var(--secondary)] flex items-center justify-center transition-colors" title="Start a video call">
                     <Video className="w-4 h-4" />
                   </button>
-                  <button className="w-10 h-10 rounded-full border border-white/10 hover:bg-white/10 flex items-center justify-center transition-colors" title="Conversation options">
+                  <button className="w-10 h-10 rounded-full border border-[var(--border)] hover:bg-[var(--secondary)] flex items-center justify-center transition-colors" title="Conversation options">
                     <MoreVertical className="w-4 h-4" />
                   </button>
                 </div>
               </header>
 
-              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-[#050913]">
+              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 bg-[var(--background)]">
                 {loadingMessages ? (
-                  <div className="flex justify-center items-center h-full text-slate-500">Loading messages...</div>
+                  <div className="flex justify-center items-center h-full text-[var(--muted-foreground)]">Loading messages...</div>
                 ) : groupedMessages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center gap-2 h-full text-slate-500">
+                  <div className="flex flex-col items-center justify-center gap-2 h-full text-[var(--muted-foreground)]">
                     <Users className="w-8 h-8" />
                     <p>No messages yet. Start the conversation!</p>
                   </div>
@@ -430,7 +430,7 @@ export default function Messages() {
                   groupedMessages.map((group, groupIndex) => (
                     <div key={group.key} className="space-y-4">
                       <div className="sticky top-0 z-10">
-                        <div className="mx-auto w-fit rounded-full bg-white/5 px-4 py-1 text-xs font-medium text-slate-300 shadow-[0_10px_40px_-25px_rgba(14,159,110,0.7)]">
+                        <div className="mx-auto w-fit rounded-full bg-[var(--secondary)] border border-[var(--border)] px-4 py-1 text-xs font-medium text-[var(--foreground)] shadow-lg">
                           {group.label}
                         </div>
                       </div>
@@ -450,20 +450,20 @@ export default function Messages() {
                           <div key={message._id || `${senderUid}-${message.timestamp}-${index}`} className={`flex ${isSelf ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-[72%] flex flex-col ${isSelf ? 'items-end' : 'items-start'}`}>
                               {showName && (
-                                <span className="text-xs text-slate-400 mb-1">
+                                <span className="text-xs text-[var(--muted-foreground)] mb-1">
                                   {message.sender?.name || 'Unknown participant'}
                                 </span>
                               )}
                               <div
-                                className={`px-4 py-3 rounded-3xl text-sm leading-relaxed shadow-[0_8px_35px_-20px_rgba(15,118,110,0.7)] ${
+                                className={`px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-lg ${
                                   isSelf
-                                    ? 'bg-gradient-to-r from-emerald-400/90 to-cyan-400/90 text-black rounded-br-md'
-                                    : 'bg-[#0f172a] text-slate-100 border border-white/5 rounded-bl-md backdrop-blur'
+                                    ? 'bg-[var(--primary)] text-[var(--primary-foreground)] rounded-br-md'
+                                    : 'bg-[var(--secondary)] text-[var(--foreground)] border border-[var(--border)] rounded-bl-md'
                                 }`}
                               >
                                 {message.content}
                               </div>
-                              <span className="text-xs text-slate-500 mt-2">
+                              <span className="text-xs text-[var(--muted-foreground)] mt-2">
                                 {formatMessageTime(message.createdAt || message.timestamp)}
                               </span>
                             </div>
@@ -476,27 +476,27 @@ export default function Messages() {
                 <div ref={messagesEndRef} />
               </div>
 
-              <footer className="border-t border-white/5 bg-[#070f1f]/80 px-6 py-5">
+              <footer className="border-t border-[var(--border)] bg-[var(--card)] px-6 py-5">
                 <form onSubmit={handleSendMessage} className="flex items-center gap-3">
                   <button
                     type="button"
-                    className="w-11 h-11 rounded-xl border border-white/10 hover:bg-white/10 flex items-center justify-center text-slate-300 transition"
+                    className="w-11 h-11 rounded-xl border border-[var(--border)] hover:bg-[var(--secondary)] flex items-center justify-center text-[var(--muted-foreground)] transition"
                     title="Attach file"
                   >
                     <Paperclip className="w-5 h-5" />
                   </button>
 
-                  <div className="flex-1 h-12 rounded-xl bg-[#0b1426] border border-white/10 flex items-center gap-3 px-3 focus-within:border-emerald-400/70 focus-within:ring-2 focus-within:ring-emerald-400/40">
+                  <div className="flex-1 h-12 rounded-xl bg-[var(--input-background)] border border-[var(--border)] flex items-center gap-3 px-3 focus-within:border-[var(--primary)] focus-within:ring-2 focus-within:ring-[var(--ring)] transition-all">
                     <input
                       type="text"
                       placeholder="Type your message..."
-                      className="flex-1 bg-transparent text-slate-100 placeholder:text-slate-500 focus:outline-none"
+                      className="flex-1 bg-transparent text-[var(--foreground)] placeholder:text-[var(--muted-foreground)] focus:outline-none"
                       value={messageInput}
                       onChange={(event) => setMessageInput(event.target.value)}
                     />
                     <button
                       type="button"
-                      className="w-9 h-9 rounded-lg border border-white/10 hover:bg-white/10 flex items-center justify-center text-slate-300 transition"
+                      className="w-9 h-9 rounded-lg border border-[var(--border)] hover:bg-[var(--secondary)] flex items-center justify-center text-[var(--muted-foreground)] transition"
                       title="Add emoji"
                     >
                       <Smile className="w-5 h-5" />
@@ -506,7 +506,7 @@ export default function Messages() {
                   <button
                     type="submit"
                     disabled={!messageInput.trim()}
-                    className="w-12 h-12 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 text-black flex items-center justify-center font-semibold shadow-[0_12px_45px_-20px_rgba(6,182,212,0.9)] transition disabled:cursor-not-allowed disabled:opacity-50 hover:shadow-[0_15px_55px_-20px_rgba(6,182,212,1)]"
+                    className="w-12 h-12 rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] flex items-center justify-center font-semibold shadow-lg transition disabled:cursor-not-allowed disabled:opacity-50 hover:opacity-90"
                     title="Send message"
                   >
                     <Send className="w-5 h-5" />
@@ -515,13 +515,13 @@ export default function Messages() {
               </footer>
             </>
           ) : (
-            <div className="flex flex-1 items-center justify-center flex-col gap-4 text-slate-500">
-              <div className="w-16 h-16 rounded-full bg-[#0b1426] flex items-center justify-center text-emerald-300">
+            <div className="flex flex-1 items-center justify-center flex-col gap-4 text-[var(--muted-foreground)]">
+              <div className="w-16 h-16 rounded-full bg-[var(--secondary)] border border-[var(--border)] flex items-center justify-center text-[var(--primary)]">
                 <Users className="w-7 h-7" />
               </div>
               <div className="text-center space-y-2">
-                <h3 className="text-lg font-semibold text-white">Select a conversation</h3>
-                <p className="text-sm text-slate-500 max-w-sm">
+                <h3 className="text-lg font-semibold text-[var(--foreground)]">Select a conversation</h3>
+                <p className="text-sm text-[var(--muted-foreground)] max-w-sm">
                   Choose a thread from the left to see the full message history and continue the discussion.
                 </p>
               </div>

@@ -98,4 +98,58 @@ router.post('/promote-admin', authenticateToken, async (req, res) => {
   }
 });
 
+// Update user role (admin only)
+router.put('/:userId/role', authenticateToken, authorizeRole('admin'), async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { role } = req.body;
+    
+    // Validate role
+    if (!['student', 'teacher', 'admin'].includes(role)) {
+      return res.status(400).json({ message: 'Invalid role. Must be student, teacher, or admin.' });
+    }
+    
+    // Update user role
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: { role } },
+      { new: true }
+    );
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // If changing to student role, ensure Student record exists
+    if (role === 'student') {
+      const Student = require('../models/Student');
+      const existingStudent = await Student.findOne({ firebaseUid: user.firebaseUid });
+      
+      if (!existingStudent) {
+        await Student.create({
+          firebaseUid: user.firebaseUid,
+          name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+          email: user.email,
+          courses: [],
+          enrolledCourseIds: []
+        });
+      }
+    }
+    
+    res.json({
+      message: 'User role updated successfully',
+      user: {
+        _id: user._id,
+        firebaseUid: user.firebaseUid,
+        email: user.email,
+        name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+        role: user.role
+      }
+    });
+  } catch (err) {
+    console.error('Failed to update user role:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

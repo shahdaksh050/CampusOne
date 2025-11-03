@@ -46,7 +46,37 @@ export default function AttendancePage() {
     try {
       setLoading(true);
       const data = await api.getCourses();
-      const activeCourses = Array.isArray(data) ? data.filter(c => c.status === 'Active') : [];
+      let activeCourses = Array.isArray(data) ? data.filter(c => c.status === 'Active') : [];
+      
+      // Filter courses for students - only show enrolled courses
+      if (isStudent && userUid) {
+        try {
+          const students = await api.getStudents();
+          // Try to find student by firebaseUid first, then by email
+          const currentStudent = students.find(s => 
+            s.firebaseUid === userUid || s.email === userUid
+          );
+          
+          if (currentStudent && (currentStudent.courses || currentStudent.enrolledCourseIds)) {
+            // Use enrolledCourseIds if available, otherwise extract from courses array
+            const enrolledCourseIds = currentStudent.enrolledCourseIds || 
+              (currentStudent.courses ? currentStudent.courses.map(c => 
+                typeof c === 'object' ? c._id : c
+              ) : []);
+            
+            activeCourses = activeCourses.filter(course => 
+              enrolledCourseIds.includes(course._id) || 
+              enrolledCourseIds.includes(String(course._id))
+            );
+          } else {
+            activeCourses = [];
+          }
+        } catch (err) {
+          console.error("Failed to fetch student enrollment", err);
+          activeCourses = [];
+        }
+      }
+      
       setCourses(activeCourses);
       if (activeCourses.length > 0 && !selectedCourse) {
         setSelectedCourse(activeCourses[0]);
@@ -110,8 +140,9 @@ export default function AttendancePage() {
       setLoading(true);
       // Get current user's student record
       const studentsData = await api.getStudents();
+      // Try to find by firebaseUid first, then by email
       const currentStudent = studentsData.find(s => 
-        s.email === userUid || s.firebaseUid === userUid
+        s.firebaseUid === userUid || s.email === userUid
       );
       
       if (!currentStudent) {
@@ -138,8 +169,9 @@ export default function AttendancePage() {
     
     try {
       const studentsData = await api.getStudents();
+      // Try to find by firebaseUid first, then by email
       const currentStudent = studentsData.find(s => 
-        s.email === userUid || s.firebaseUid === userUid
+        s.firebaseUid === userUid || s.email === userUid
       );
       
       if (!currentStudent) return;
@@ -414,7 +446,7 @@ export default function AttendancePage() {
                     type="date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="border-[var(--border)]"
+                    className="h-10 border-[var(--border)]"
                   />
                 </div>
 
@@ -426,7 +458,7 @@ export default function AttendancePage() {
                       placeholder="Name, roll number, email..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 border-[var(--border)]"
+                      className="h-10 pl-10 border-[var(--border)]"
                     />
                   </div>
                 </div>

@@ -2,24 +2,31 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   BookOpen, Users, Calendar, MessageCircle, CheckSquare,
-  Bot, Bell, TrendingUp, Clock, CheckCircle
+  Bot, Bell, TrendingUp, Clock, CheckCircle, Settings, ClipboardList
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import ActiveClassesWidget from '../components/ActiveClassesWidget';
 
 const moduleCards = [
   { id: 'courses', title: 'Courses', icon: BookOpen, status: 'success', color: 'bg-blue-500', route: '/courses' },
-  { id: 'students', title: 'Students', icon: Users, status: 'success', color: 'bg-green-500', route: '/students' },
+  { id: 'students', title: 'Students', icon: Users, status: 'success', color: 'bg-green-500', route: '/students', roles: ['teacher', 'admin'] },
   { id: 'timetable', title: 'Timetable', icon: Calendar, status: 'warning', color: 'bg-orange-500', route: '/timetable' },
   { id: 'chat', title: 'Messages', icon: MessageCircle, status: 'success', color: 'bg-purple-500', route: '/chat' },
   { id: 'attendance', title: 'Attendance', icon: CheckSquare, status: 'success', color: 'bg-teal-500', route: '/attendance-manage' },
+  { id: 'attendance-records', title: 'Attendance Records', icon: ClipboardList, status: 'success', color: 'bg-indigo-500', route: '/attendance-records', roles: ['teacher', 'admin'] },
+  { id: 'user-management', title: 'User Management', icon: Settings, status: 'success', color: 'bg-red-500', route: '/user-management', roles: ['admin'] },
   { id: 'ai-assistant', title: 'AI Assistant', icon: Bot, status: 'success', color: 'bg-pink-500', route: '/ai-assistant' }
 ];
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { userRole } = useAuth();
+  const isTeacherOrAdmin = userRole === 'teacher' || userRole === 'admin';
+  
   const [stats, setStats] = useState({
     activeCourses: 0,
     totalStudents: 0,
@@ -123,62 +130,82 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {isTeacherOrAdmin && (
+        <div className="mb-6">
+          <ActiveClassesWidget />
+        </div>
+      )}
+
       <div className="module-grid">
-        {moduleCards.map(m => {
-          const Icon = m.icon;
-          let description = '';
-          let alert = '';
+        {moduleCards
+          .filter(m => {
+            // Filter cards based on user role
+            if (!m.roles || m.roles.length === 0) return true;
+            return m.roles.includes(userRole);
+          })
+          .map(m => {
+            const Icon = m.icon;
+            let description = '';
+            let alert = '';
 
-          // Dynamic descriptions and alerts based on real data
-          switch (m.id) {
-            case 'courses':
-              description = `${stats.activeCourses} Active Courses`;
-              alert = stats.activeCourses > 0 ? 'View all courses' : 'No courses yet';
-              break;
-            case 'students':
-              description = `${stats.totalStudents} Enrolled`;
-              alert = stats.totalStudents > 0 ? `${stats.totalStudents} total students` : 'No students yet';
-              break;
-            case 'timetable':
-              description = 'Current Week';
-              alert = 'Manage schedule';
-              break;
-            case 'chat':
-              description = `${stats.totalConversations} Conversations`;
-              alert = stats.totalConversations > 0 ? 'Check messages' : 'No conversations';
-              break;
-            case 'attendance':
-              description = 'Live Tracking';
-              alert = `${stats.attendanceRate}% average rate`;
-              break;
-            case 'ai-assistant':
-              description = 'Smart Helper';
-              alert = 'Ready to assist';
-              break;
-            default:
-              description = m.title;
-              alert = 'Available';
-          }
+            // Dynamic descriptions and alerts based on real data
+            switch (m.id) {
+              case 'courses':
+                description = `${stats.activeCourses} Active Courses`;
+                alert = stats.activeCourses > 0 ? 'View all courses' : 'No courses yet';
+                break;
+              case 'students':
+                description = `${stats.totalStudents} Enrolled`;
+                alert = stats.totalStudents > 0 ? `${stats.totalStudents} total students` : 'No students yet';
+                break;
+              case 'timetable':
+                description = 'Current Week';
+                alert = 'Manage schedule';
+                break;
+              case 'chat':
+                description = `${stats.totalConversations} Conversations`;
+                alert = stats.totalConversations > 0 ? 'Check messages' : 'No conversations';
+                break;
+              case 'attendance':
+                description = 'Live Tracking';
+                alert = `${stats.attendanceRate}% average rate`;
+                break;
+              case 'attendance-records':
+                description = 'Student Records';
+                alert = 'View detailed records';
+                break;
+              case 'user-management':
+                description = 'Manage Roles';
+                alert = 'Update user permissions';
+                break;
+              case 'ai-assistant':
+                description = 'Smart Helper';
+                alert = 'Ready to assist';
+                break;
+              default:
+                description = m.title;
+                alert = 'Available';
+            }
 
-          return (
-            <div key={m.id} className="module-card glass-card hover-lift" onClick={() => handleNavigate(m)}>
-              <div className="module-header">
-                <div className={`module-icon ${m.color.replace('bg-','')}`}>
-                  <Icon />
+            return (
+              <div key={m.id} className="module-card glass-card hover-lift" onClick={() => handleNavigate(m)}>
+                <div className="module-header">
+                  <div className={`module-icon ${m.color.replace('bg-','')}`}>
+                    <Icon />
+                  </div>
+                  <div className="badge success">Active</div>
                 </div>
-                <div className="badge success">Active</div>
-              </div>
-              <div className="module-content">
-                <h3>{m.title}</h3>
-                <p>{description}</p>
-                <div className="module-alert">
-                  <div className="alert-dot" />
-                  <span>{alert}</span>
+                <div className="module-content">
+                  <h3>{m.title}</h3>
+                  <p>{description}</p>
+                  <div className="module-alert">
+                    <div className="alert-dot" />
+                    <span>{alert}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
     </div>
   );

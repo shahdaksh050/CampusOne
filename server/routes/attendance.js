@@ -143,8 +143,8 @@ router.post('/', authorizeRole('teacher'), async (req, res) => {
   }
 });
 
-// Bulk mark attendance (teacher only)
-router.post('/bulk', authorizeRole('teacher'), async (req, res) => {
+// Bulk mark attendance (teacher/admin only)
+router.post('/bulk', authorizeRole('teacher', 'admin'), async (req, res) => {
   try {
     const { courseId, date, records } = req.body;
     
@@ -219,6 +219,175 @@ router.delete('/:id', authorizeRole('teacher'), async (req, res) => {
     const deletedAttendance = await Attendance.findByIdAndDelete(req.params.id);
     if (!deletedAttendance) return res.status(404).json({ message: 'Attendance record not found' });
     res.json({ message: 'Attendance record deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get current active classes based on time (for auto-attendance)
+router.get('/active-classes', async (req, res) => {
+  try {
+    const TimetableEntry = require('../models/TimetableEntry');
+    
+    const now = new Date();
+    const dayOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
+    const currentTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    
+    // Get all timetable entries for today
+    const entries = await TimetableEntry.find({ 
+      dayOfWeek,
+      isActive: true 
+    }).populate('courseId', 'title courseCode');
+    
+    // Filter entries where current time is within class time
+    const activeClasses = entries.filter(entry => {
+      const startTime = new Date(`1970-01-01 ${entry.startTime}`);
+      const endTime = new Date(`1970-01-01 ${entry.endTime}`);
+      const current = new Date(`1970-01-01 ${currentTime}`);
+      
+      return current >= startTime && current <= endTime;
+    });
+    
+    res.json({
+      dayOfWeek,
+      currentTime,
+      activeClasses: activeClasses.map(c => ({
+        _id: c._id,
+        course: c.courseId,
+        startTime: c.startTime,
+        endTime: c.endTime,
+        room: c.room,
+        instructor: c.instructor
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get comprehensive student records (teacher/admin only)
+router.get('/records/all', authorizeRole('teacher', 'admin'), async (req, res) => {
+  try {
+    const { courseId, startDate, endDate } = req.query;
+    
+    // Get all students with their enrollment info
+    const students = await Student.find({ status: 'Active' })
+      .populate('courses', 'title courseCode')
+      .select('firstName lastName email rollNumber studentId courses enrolledCourseIds');
+    
+    const records = [];
+    
+    for (const student of students) {
+      // Build filter for attendance
+      const filter = { student: student._id };
+      if (courseId) filter.course = courseId;
+      if (startDate || endDate) {
+        filter.date = {};
+        if (startDate) filter.date.$gte = new Date(startDate);
+        if (endDate) filter.date.$lte = new Date(endDate);
+      }
+      
+      // Get attendance records
+      const attendance = await Attendance.find(filter)
+        .populate('course', 'title courseCode')
+        .sort({ date: -1 });
+      
+      // Calculate stats
+      const stats = {
+        total: attendance.length,
+        present: attendance.filter(r => r.status === 'Present').length,
+        absent: attendance.filter(r => r.status === 'Absent').length,
+        late: attendance.filter(r => r.status === 'Late').length,
+        excused: attendance.filter(r => r.status === 'Excused').length,
+        attendanceRate: 0
+      };
+      
+      if (stats.total > 0) {
+        stats.attendanceRate = parseFloat(((stats.present + stats.late) / stats.total * 100).toFixed(2));
+      }
+      
+      records.push({
+        student: {
+          _id: student._id,
+          firstName: student.firstName,
+          lastName: student.lastName,
+          email: student.email,
+          rollNumber: student.rollNumber,
+          studentId: student.studentId,
+          enrolledCourses: student.courses || []
+        },
+        stats,
+        recentAttendance: attendance.slice(0, 10) // Last 10 records
+      });
+    }
+    
+    // Sort by attendance rate (lowest first to identify at-risk students)
+    records.sort((a, b) => a.stats.attendanceRate - b.stats.attendanceRate);
+    
+    res.json(records);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get detailed records for a specific student (teacher/admin only)
+router.get('/records/student/:studentId', authorizeRole('teacher', 'admin'), async (req, res) => {
+  try {
+    const { courseId } = req.query;
+    
+    const student = await Student.findById(req.params.studentId)
+      .populate('courses', 'title courseCode instructor');
+    
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+    
+    const filter = { student: student._id };
+    if (courseId) filter.course = courseId;
+    
+    const attendance = await Attendance.find(filter)
+      .populate('course', 'title courseCode instructor')
+      .sort({ date: -1 });
+    
+    // Group by course
+    const byCourse = {};
+    attendance.forEach(record => {
+      const courseId = record.course._id.toString();
+      if (!byCourse[courseId]) {
+        byCourse[courseId] = {
+          course: record.course,
+          records: [],
+          stats: { total: 0, present: 0, absent: 0, late: 0, excused: 0 }
+        };
+      }
+      byCourse[courseId].records.push(record);
+      byCourse[courseId].stats.total++;
+      byCourse[courseId].stats[record.status.toLowerCase()]++;
+    });
+    
+    // Calculate attendance rate for each course
+    Object.values(byCourse).forEach(courseData => {
+      const { stats } = courseData;
+      stats.attendanceRate = stats.total > 0 
+        ? parseFloat(((stats.present + stats.late) / stats.total * 100).toFixed(2))
+        : 0;
+    });
+    
+    res.json({
+      student: {
+        _id: student._id,
+        firstName: student.firstName,
+        lastName: student.lastName,
+        email: student.email,
+        rollNumber: student.rollNumber,
+        studentId: student.studentId,
+        program: student.program,
+        year: student.year,
+        enrolledCourses: student.courses
+      },
+      attendanceByCard: Object.values(byCourse),
+      allRecords: attendance
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Home, BookOpen, Users, Calendar, MessageCircle, CheckSquare, Bot, LogOut } from 'lucide-react';
+import { Home, BookOpen, Users, Calendar, MessageCircle, CheckSquare, Bot, LogOut, ClipboardList, Settings } from 'lucide-react';
 import AvatarInitials from './AvatarInitials';
 import { useAppStore } from '../store/appStore';
 
@@ -11,6 +11,8 @@ const navigationItems = [
   { id: 'timetable', label: 'Timetable', icon: Calendar, path: '/timetable' },
   { id: 'chat', label: 'Messages', icon: MessageCircle, path: '/chat' },
   { id: 'attendance-manage', label: 'Attendance', icon: CheckSquare, path: '/attendance-manage' },
+  { id: 'attendance-records', label: 'Attendance Records', icon: ClipboardList, path: '/attendance-records', roles: ['teacher', 'admin'] },
+  { id: 'user-management', label: 'User Management', icon: Settings, path: '/user-management', roles: ['admin'] },
   { id: 'ai-assistant', label: 'AI Assistant', icon: Bot, path: '/ai-assistant' },
 ];
 

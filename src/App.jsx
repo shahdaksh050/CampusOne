@@ -11,7 +11,9 @@ import TimetablePlanner from './pages/TimetablePlanner';
 import Messages from './pages/Messages';
 import AttendanceMap from './pages/AttendanceMap';
 import AttendancePage from './pages/AttendancePage';
+import StudentAttendanceRecords from './pages/StudentAttendanceRecords';
 import UserProfilePage from './pages/UserProfilePage';
+import UserRoleManagement from './pages/UserRoleManagement';
 import AuthPage from './pages/AuthPage';
 
 function RouterConfig() {
@@ -36,8 +38,13 @@ function RouterConfig() {
           )} />
           <Route path="profile" element={<UserProfilePage />} />
 
-          <Route element={<ProtectedRoute roles={['teacher']} />}>
+          <Route element={<ProtectedRoute roles={['teacher', 'admin']} />}>
             <Route path="students" element={<StudentRoster />} />
+            <Route path="attendance-records" element={<StudentAttendanceRecords />} />
+          </Route>
+
+          <Route element={<ProtectedRoute roles={['admin']} />}>
+            <Route path="user-management" element={<UserRoleManagement />} />
           </Route>
         </Route>
       </Route>

@@ -32,6 +32,11 @@ const studentSchema = new mongoose.Schema({
     unique: true,
     lowercase: true
   },
+  firebaseUid: {
+    type: String,
+    unique: true,
+    sparse: true // Allows null/undefined values to be non-unique
+  },
   phone: {
     type: String,
     trim: true

@@ -51,7 +51,7 @@ export default function CourseManagement() {
         const ids = me ? (
           (Array.isArray(me.enrolledCourseIds) && me.enrolledCourseIds.length)
             ? me.enrolledCourseIds
-            : (Array.isArray(me.courses) ? me.courses.map((c) => c._id) : [])
+            : (Array.isArray(me.courses) ? me.courses.map((c) => (typeof c === 'object' ? c._id : c)) : [])
         ) : [];
         setStudentCourseIds(ids);
       } catch (_) {
@@ -176,6 +176,21 @@ export default function CourseManagement() {
         toast.success('Enrolled in course');
         setStudentCourseIds((prev) => Array.from(new Set([...(prev || []), courseId])));
         fetchCourses();
+        // Reload to ensure we have the latest enrollment state
+        if (isStudent && userEmail) {
+          try {
+            const data = await api.apiCall(`/students?search=${encodeURIComponent(userEmail)}`);
+            const me = Array.isArray(data) ? data[0] : null;
+            const ids = me ? (
+              (Array.isArray(me.enrolledCourseIds) && me.enrolledCourseIds.length)
+                ? me.enrolledCourseIds
+                : (Array.isArray(me.courses) ? me.courses.map((c) => c._id || c) : [])
+            ) : [];
+            setStudentCourseIds(ids);
+          } catch (err) {
+            console.error('Failed to reload enrollments:', err);
+          }
+        }
       } else if (res.status === 409) {
         // Already enrolled — reflect state locally and notify gently
         setStudentCourseIds((prev) => Array.from(new Set([...(prev || []), courseId])));
@@ -193,9 +208,9 @@ export default function CourseManagement() {
 
   const statusBadgeClass = (status) => {
     const s = (status || '').toLowerCase();
-    if (s === 'active') return 'bg-green-100 text-green-800';
-    if (s === 'completed') return 'bg-[var(--chart-2)] text-black';
-    return 'bg-gray-300 text-gray-900 dark:bg-gray-600 dark:text-white';
+    if (s === 'active') return 'bg-green-500/20 text-green-400 border border-green-500/30';
+    if (s === 'completed') return 'bg-[var(--chart-2)]/20 text-[var(--chart-2)] border border-[var(--chart-2)]/30';
+    return 'bg-[var(--muted)] text-[var(--muted-foreground)] border border-[var(--border)]';
   };
 
   if (loading) {

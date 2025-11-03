@@ -149,6 +149,25 @@ class ApiService {
     });
   }
 
+  // New attendance endpoints
+  async getActiveClasses() {
+    return this.apiCall('/attendance/active-classes');
+  }
+
+  async getAllStudentRecords(courseId = null, startDate = null, endDate = null) {
+    const params = new URLSearchParams();
+    if (courseId) params.append('courseId', courseId);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    const query = params.toString() ? `?${params.toString()}` : '';
+    return this.apiCall(`/attendance/records/all${query}`);
+  }
+
+  async getStudentDetailedRecords(studentId, courseId = null) {
+    const params = courseId ? `?courseId=${courseId}` : '';
+    return this.apiCall(`/attendance/records/student/${studentId}${params}`);
+  }
+
   // Timetable API
   async getTimetable() {
     return this.apiCall('/timetable');
@@ -214,6 +233,13 @@ class ApiService {
   // Users API
   async getUsers() {
     return this.apiCall('/users');
+  }
+
+  async updateUserRole(userId, role) {
+    return this.apiCall(`/users/${userId}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    });
   }
 }
 

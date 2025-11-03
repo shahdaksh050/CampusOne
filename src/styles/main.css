@@ -274,7 +274,12 @@ p {
   color: var(--card-foreground);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
 }
 
 .card-content {
@@ -283,7 +288,8 @@ p {
 
 .glass-card {
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--card) 0%, rgba(255,255,255,0.05) 100%);
 }
 
 .hover-lift {
@@ -292,7 +298,7 @@ p {
 
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
 }
 
 /* Stats Grid */
@@ -318,26 +324,31 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 }
 
 .stat-icon.primary {
-  background-color: rgba(3, 218, 198, 0.1);
+  background: linear-gradient(135deg, rgba(3, 218, 198, 0.2), rgba(3, 218, 198, 0.05));
   color: var(--chart-1);
+  border: 1px solid rgba(3, 218, 198, 0.3);
 }
 
 .stat-icon.accent {
-  background-color: rgba(187, 134, 252, 0.1);
+  background: linear-gradient(135deg, rgba(187, 134, 252, 0.2), rgba(187, 134, 252, 0.05));
   color: var(--chart-2);
+  border: 1px solid rgba(187, 134, 252, 0.3);
 }
 
 .stat-icon.success {
-  background-color: rgba(76, 175, 80, 0.1);
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(76, 175, 80, 0.05));
   color: var(--chart-5);
+  border: 1px solid rgba(76, 175, 80, 0.3);
 }
 
 .stat-icon.info {
-  background-color: rgba(33, 150, 243, 0.1);
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.2), rgba(33, 150, 243, 0.05));
   color: #2196F3;
+  border: 1px solid rgba(33, 150, 243, 0.3);
 }
 
 .stat-icon i {
@@ -364,14 +375,18 @@ p {
 
 .module-card {
   background-color: var(--card);
+  border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.5rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
 }
 
 .module-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+  border-color: var(--primary);
 }
 
 .module-card:hover h3 {
@@ -391,6 +406,12 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.module-card:hover .module-icon {
+  transform: scale(1.1) rotate(5deg);
 }
 
 .module-icon i {
@@ -399,14 +420,30 @@ p {
   color: white;
 }
 
-.module-icon.blue { background-color: #2196F3; }
-.module-icon.green { background-color: #4CAF50; }
-.module-icon.orange { background-color: #FF9800; }
-.module-icon.purple { background-color: #9C27B0; }
-.module-icon.teal { background-color: #009688; }
-.module-icon.red { background-color: #F44336; }
-.module-icon.indigo { background-color: #3F51B5; }
-.module-icon.pink { background-color: #E91E63; }
+.module-icon.blue { 
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+}
+.module-icon.green { 
+  background: linear-gradient(135deg, #4CAF50, #388E3C);
+}
+.module-icon.orange { 
+  background: linear-gradient(135deg, #FF9800, #F57C00);
+}
+.module-icon.purple { 
+  background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+}
+.module-icon.teal { 
+  background: linear-gradient(135deg, #009688, #00796B);
+}
+.module-icon.red { 
+  background: linear-gradient(135deg, #F44336, #D32F2F);
+}
+.module-icon.indigo { 
+  background: linear-gradient(135deg, #3F51B5, #303F9F);
+}
+.module-icon.pink { 
+  background: linear-gradient(135deg, #E91E63, #C2185B);
+}
 
 .module-content h3 {
   margin-bottom: 0.5rem;
@@ -837,3 +874,87 @@ p {
     display: none;
   }
 }
+
+/* Enhanced Dark Mode Effects */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(3, 218, 198, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(3, 218, 198, 0.5);
+  }
+}
+
+.glow-effect {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Improved focus states */
+input:focus, 
+select:focus, 
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(3, 218, 198, 0.1);
+}
+
+/* Smooth page transitions */
+.page {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced stat cards */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transition: left 0.5s;
+}
+
+.stat-card:hover::before {
+  left: 100%;
+}
+
+/* Badge glow effect */
+.badge.success {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(76, 175, 80, 0.1));
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+  border: 1px solid rgba(76, 175, 80, 0.4);
+}
+
+/* Loading skeleton */
+@keyframes skeleton {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skeleton {
+  animation: skeleton 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--muted) 25%, var(--muted-foreground) 50%, var(--muted) 75%);
+  background-size: 200% 100%;
+}
+

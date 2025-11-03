@@ -47,16 +47,21 @@ export default function TimetablePlanner() {
           // For students, only show courses they're enrolled in
           try {
             const students = await api.getStudents();
+            // Try to find by firebaseUid first, then by email
             const currentStudent = students.find(s => 
-              s.email === userUid || s.firebaseUid === userUid
+              s.firebaseUid === userUid || s.email === userUid
             );
             
-            if (currentStudent && currentStudent.courses) {
-              const enrolledCourseIds = currentStudent.courses.map(c => 
-                typeof c === 'object' ? c._id : c
-              );
+            if (currentStudent && (currentStudent.courses || currentStudent.enrolledCourseIds)) {
+              // Use enrolledCourseIds if available, otherwise extract from courses array
+              const enrolledCourseIds = currentStudent.enrolledCourseIds || 
+                (currentStudent.courses ? currentStudent.courses.map(c => 
+                  typeof c === 'object' ? c._id : c
+                ) : []);
+              
               filteredCourses = cs.filter(course => 
-                enrolledCourseIds.includes(course._id)
+                enrolledCourseIds.includes(course._id) || 
+                enrolledCourseIds.includes(String(course._id))
               );
             } else {
               filteredCourses = [];
@@ -68,9 +73,12 @@ export default function TimetablePlanner() {
         }
         
         // Filter timetable entries to match filtered courses
-        const filteredCourseIds = filteredCourses.map(c => c._id);
+        const filteredCourseIds = filteredCourses.map(c => String(c._id));
         const filteredTimetable = tt.filter(entry => {
-          const courseId = typeof entry.courseId === 'object' ? entry.courseId._id : entry.courseId;
+          // Handle both populated (entry.courseId is object) and unpopulated (entry.courseId is string) cases
+          const courseId = entry.courseId?._id 
+            ? String(entry.courseId._id) 
+            : String(entry.courseId);
           return filteredCourseIds.includes(courseId);
         });
         
@@ -219,8 +227,8 @@ export default function TimetablePlanner() {
                           {cls.conflict && (
                             <AlertTriangle className="absolute top-2 right-2 w-4 h-4 text-red-600" />
                           )}
-                          <div className="text-xs font-semibold text-[var(--primary)] mb-1">{cls.course?.courseCode || "CODE"}</div>
-                          <div className="font-semibold text-sm text-[var(--foreground)] mb-1">{cls.course?.title || "Course"}</div>
+                          <div className="text-xs font-semibold text-[var(--primary)] mb-1">{cls.courseId?.courseCode || cls.course?.courseCode || "CODE"}</div>
+                          <div className="font-semibold text-sm text-[var(--foreground)] mb-1">{cls.courseId?.title || cls.course?.title || "Course"}</div>
                           <div className="text-xs text-[var(--muted-foreground)] mb-1">
                             <span className="inline-flex items-center gap-1">
                               <span className="font-medium">{cls.instructor}</span>

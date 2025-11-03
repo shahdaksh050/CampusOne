@@ -93,18 +93,50 @@ router.post('/:courseId/enroll', authorizeRole('student'), async (req, res) => {
     course.currentEnrollment = course.enrolledStudentUids.length;
     await course.save();
 
-    // Link on student side: find by firebaseUid
-    const student = await Student.findOne({ email: req.user.email });
-    if (student) {
-      student.enrolledCourseIds = Array.isArray(student.enrolledCourseIds) ? student.enrolledCourseIds : [];
-      if (!student.enrolledCourseIds.includes(courseId)) student.enrolledCourseIds.push(courseId);
-      // Also link to the ref array for population in GET /students
-      student.courses = Array.isArray(student.courses) ? student.courses : [];
-      if (!student.courses.find(id => String(id) === String(course._id))) {
-        student.courses.push(course._id);
-      }
-      await student.save();
+    // Link on student side: find by firebaseUid or email
+    let student = await Student.findOne({ firebaseUid: uid });
+    if (!student) {
+      student = await Student.findOne({ email: req.user.email });
     }
+    
+    // If no Student record exists, create one automatically
+    if (!student) {
+      console.log(`Auto-creating Student record for ${req.user.email}`);
+      const nameParts = (req.user.name || req.user.email.split('@')[0]).split(/[\s.]+/);
+      const firstName = nameParts[0] || 'Student';
+      const lastName = nameParts[1] || 'User';
+      
+      student = new Student({
+        studentId: `STU${Date.now()}`,
+        rollNumber: `AUTO${Date.now()}`,
+        firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
+        lastName: lastName.charAt(0).toUpperCase() + lastName.slice(1),
+        email: req.user.email,
+        firebaseUid: uid,
+        program: 'Not Specified',
+        year: 1,
+        status: 'Active',
+        courses: [],
+        enrolledCourseIds: []
+      });
+    }
+    
+    // Ensure firebaseUid is set
+    if (!student.firebaseUid) {
+      student.firebaseUid = uid;
+    }
+    
+    // Add course enrollment
+    student.enrolledCourseIds = Array.isArray(student.enrolledCourseIds) ? student.enrolledCourseIds : [];
+    if (!student.enrolledCourseIds.includes(courseId)) student.enrolledCourseIds.push(courseId);
+    
+    // Also link to the ref array for population in GET /students
+    student.courses = Array.isArray(student.courses) ? student.courses : [];
+    if (!student.courses.find(id => String(id) === String(course._id))) {
+      student.courses.push(course._id);
+    }
+    
+    await student.save();
 
     // Auto-add student to course conversation group
     try {
@@ -139,7 +171,10 @@ router.post('/:courseId/unenroll', authorizeRole('student'), async (req, res) =>
     }
 
     // Remove from student side
-    const student = await Student.findOne({ email: req.user.email });
+    let student = await Student.findOne({ firebaseUid: uid });
+    if (!student) {
+      student = await Student.findOne({ email: req.user.email });
+    }
     if (student) {
       if (Array.isArray(student.enrolledCourseIds)) {
         student.enrolledCourseIds = student.enrolledCourseIds.filter(id => String(id) !== String(courseId));

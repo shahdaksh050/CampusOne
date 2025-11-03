@@ -69,7 +69,7 @@ export default function UserProfilePage() {
   const initials = (profile.name || userEmail || 'U').split(/[@\s]+/).filter(Boolean).slice(0,2).map(s => s[0].toUpperCase()).join('');
 
   return (
-    <div className="page active p-6 space-y-6">
+    <div className="page space-y-6">
       {/* Page Header */}
       <div className="page-header">
         <div>

@@ -207,7 +207,7 @@ export default function CourseManagement() {
   }
 
   return (
-    <div className="page active p-6 space-y-6">
+    <div className="page space-y-6">
       {/* Page Header with Icon */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

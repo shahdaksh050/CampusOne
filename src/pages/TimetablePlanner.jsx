@@ -5,6 +5,7 @@ import { Input } from "../ui/input";
 import { Plus, Edit3, Trash2, AlertTriangle } from "lucide-react";
 import api from "../services/api";
 import { toast } from "../components/Toast";
+import { useAuth } from "../context/AuthContext";
 
 const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]; // display grid for weekdays
 const allDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]; // form supports all
@@ -13,6 +14,7 @@ const timeSlots = [
 ];
 
 export default function TimetablePlanner() {
+  const { userRole, userUid } = useAuth();
   const [timetable, setTimetable] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,8 +38,44 @@ export default function TimetablePlanner() {
       try {
         setLoading(true);
         const [tt, cs] = await Promise.all([api.getTimetable(), api.getCourses()]);
-        setTimetable(tt);
-        setCourses(cs);
+        
+        // Filter courses based on user role
+        let filteredCourses = cs;
+        const isTeacherOrAdmin = userRole === 'teacher' || userRole === 'admin';
+        
+        if (!isTeacherOrAdmin && userRole === 'student') {
+          // For students, only show courses they're enrolled in
+          try {
+            const students = await api.getStudents();
+            const currentStudent = students.find(s => 
+              s.email === userUid || s.firebaseUid === userUid
+            );
+            
+            if (currentStudent && currentStudent.courses) {
+              const enrolledCourseIds = currentStudent.courses.map(c => 
+                typeof c === 'object' ? c._id : c
+              );
+              filteredCourses = cs.filter(course => 
+                enrolledCourseIds.includes(course._id)
+              );
+            } else {
+              filteredCourses = [];
+            }
+          } catch (err) {
+            console.error("Failed to fetch student enrollment", err);
+            filteredCourses = [];
+          }
+        }
+        
+        // Filter timetable entries to match filtered courses
+        const filteredCourseIds = filteredCourses.map(c => c._id);
+        const filteredTimetable = tt.filter(entry => {
+          const courseId = typeof entry.courseId === 'object' ? entry.courseId._id : entry.courseId;
+          return filteredCourseIds.includes(courseId);
+        });
+        
+        setTimetable(filteredTimetable);
+        setCourses(filteredCourses);
       } catch (err) {
         console.error("Failed to load timetable/courses", err);
         toast.error("Failed to load timetable");
@@ -46,7 +84,7 @@ export default function TimetablePlanner() {
       }
     };
     load();
-  }, []);
+  }, [userRole, userUid]);
 
   const getClassesForSlot = (day, time) => timetable.filter((cls) => cls.dayOfWeek === day && (cls.startTime || "").trim() === time);
 
@@ -127,23 +165,33 @@ export default function TimetablePlanner() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="page">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
       </div>
     );
   }
 
+  const isTeacherOrAdmin = userRole === 'teacher' || userRole === 'admin';
+
   return (
-    <div className="page active p-6 space-y-6">
+    <div className="page space-y-6">
       {/* Page Header */}
       <div className="page-header">
-        <div>
-          <h1 className="page-title">Timetable Planner</h1>
-          <p className="page-subtitle">Manage weekly class schedule and timings</p>
+        <div className="header-content">
+          <h1>Timetable Planner</h1>
+          <p className="text-[var(--muted-foreground)] mt-1">
+            {isTeacherOrAdmin 
+              ? 'Manage weekly class schedule and timings' 
+              : 'View your weekly class schedule'}
+          </p>
         </div>
-        <Button onClick={() => openAddModal()} className="btn btn-primary">
-          <Plus className="w-4 h-4 mr-2" /> New Entry
-        </Button>
+        {isTeacherOrAdmin && (
+          <Button onClick={() => openAddModal()} className="btn btn-primary">
+            <Plus className="w-4 h-4 mr-2" /> New Entry
+          </Button>
+        )}
       </div>
 
       {/* Weekly Schedule Card */}
@@ -186,17 +234,19 @@ export default function TimetablePlanner() {
                               {cls.startTime} - {cls.endTime}
                             </span>
                           </div>
-                          <div className="absolute top-2 right-2 flex gap-1 opacity-0 hover:opacity-100 transition-opacity bg-white/90 rounded-md p-1">
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEditModal(cls)} title="Edit">
-                              <Edit3 className="w-3 h-3" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleDelete(cls)} title="Delete">
-                              <Trash2 className="w-3 h-3 text-red-600" />
-                            </Button>
-                          </div>
+                          {isTeacherOrAdmin && (
+                            <div className="absolute top-2 right-2 flex gap-1 opacity-0 hover:opacity-100 transition-opacity bg-white/90 rounded-md p-1">
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => openEditModal(cls)} title="Edit">
+                                <Edit3 className="w-3 h-3" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleDelete(cls)} title="Delete">
+                                <Trash2 className="w-3 h-3 text-red-600" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       ))}
-                      {classes.length === 0 && (
+                      {classes.length === 0 && isTeacherOrAdmin && (
                         <div className="h-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
                           <Button
                             variant="ghost"

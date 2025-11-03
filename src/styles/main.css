@@ -249,12 +249,8 @@ p {
 }
 
 .page {
-  display: none;
-  padding: 1.5rem;
-}
-
-.page.active {
   display: block;
+  padding: 1.5rem;
 }
 
 .page-header {

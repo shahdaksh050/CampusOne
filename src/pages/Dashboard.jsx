@@ -77,7 +77,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div id="dashboard" className="page active p-6 space-y-6">
+    <div id="dashboard" className="page space-y-6">
       <div className="page-header">
         <div className="header-content">
           <h1>Dashboard</h1>

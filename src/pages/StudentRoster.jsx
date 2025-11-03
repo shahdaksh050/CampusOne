@@ -147,7 +147,7 @@ export default function StudentRoster() {
   }
 
   return (
-    <div className="page active p-6 space-y-6">
+    <div className="page space-y-6">
       {/* Page Header */}
       <div className="page-header">
         <div>

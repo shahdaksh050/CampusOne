@@ -241,6 +241,35 @@ class ApiService {
       body: JSON.stringify({ role }),
     });
   }
+
+  // AI Assistant API
+  async getAIConversations() {
+    return this.apiCall('/ai/conversations');
+  }
+
+  async getAIConversation(id) {
+    return this.apiCall(`/ai/conversations/${id}`);
+  }
+
+  async createAIConversation(title = 'New Chat') {
+    return this.apiCall('/ai/conversations', {
+      method: 'POST',
+      body: JSON.stringify({ title }),
+    });
+  }
+
+  async sendAIMessage(conversationId, message) {
+    return this.apiCall(`/ai/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    });
+  }
+
+  async deleteAIConversation(id) {
+    return this.apiCall(`/ai/conversations/${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export default new ApiService();

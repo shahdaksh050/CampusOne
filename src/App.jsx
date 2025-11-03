@@ -14,6 +14,7 @@ import AttendancePage from './pages/AttendancePage';
 import StudentAttendanceRecords from './pages/StudentAttendanceRecords';
 import UserProfilePage from './pages/UserProfilePage';
 import UserRoleManagement from './pages/UserRoleManagement';
+import AIAssistant from './pages/AIAssistant';
 import AuthPage from './pages/AuthPage';
 
 function RouterConfig() {
@@ -30,12 +31,7 @@ function RouterConfig() {
           <Route path="chat" element={<Messages />} />
           <Route path="attendance" element={<AttendancePage />} />
           <Route path="attendance-manage" element={<AttendancePage />} />
-          <Route path="ai-assistant" element={(
-            <div className="p-6">
-              <h1 className="text-2xl font-bold">AI Assistant</h1>
-              <p className="text-muted">Coming soon...</p>
-            </div>
-          )} />
+          <Route path="ai-assistant" element={<AIAssistant />} />
           <Route path="profile" element={<UserProfilePage />} />
 
           <Route element={<ProtectedRoute roles={['teacher', 'admin']} />}>

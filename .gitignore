@@ -27,6 +27,15 @@ dist-ssr
 # Environment files
 .env
 .env.local
-.env.*
+.env.development
+.env.production
 # Ignore env inside the server folder too
 server/.env
+server/.env.local
+# But keep example files
+!.env.example
+!server/.env.example
+
+# Test files
+server/test-*.js
+server/list-models.js

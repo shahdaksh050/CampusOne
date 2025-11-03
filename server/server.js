@@ -44,6 +44,7 @@ const attendanceRoutes = require('./routes/attendance');
 const timetableRoutes = require('./routes/timetable');
 const messageRoutes = require('./routes/messages');
 const userRoutes = require('./routes/users');
+const aiRoutes = require('./routes/ai');
 const { authenticateToken } = require('./middleware/auth');
 
 // Initialize express app
@@ -85,6 +86,7 @@ app.use('/api/students', authenticateToken, studentRoutes);
 app.use('/api/attendance', authenticateToken, attendanceRoutes);
 app.use('/api/timetable', authenticateToken, timetableRoutes);
 app.use('/api', messageRoutes);
+app.use('/api/ai', authenticateToken, aiRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

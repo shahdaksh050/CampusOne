@@ -47,10 +47,33 @@ function IconForType({ type }) {
 }
 
 function Toast({ message, type }) {
+  // Determine colors based on type
+  let bgColor = 'bg-[var(--card)]';
+  let borderColor = 'border-[var(--border)]';
+  let iconColor = 'text-[var(--foreground)]';
+  
+  if (type === 'success') {
+    bgColor = 'bg-green-500/95';
+    borderColor = 'border-green-400';
+    iconColor = 'text-white';
+  } else if (type === 'error') {
+    bgColor = 'bg-[var(--destructive)]/95';
+    borderColor = 'border-[var(--destructive)]';
+    iconColor = 'text-white';
+  } else if (type === 'warning') {
+    bgColor = 'bg-orange-500/95';
+    borderColor = 'border-orange-400';
+    iconColor = 'text-white';
+  } else if (type === 'info') {
+    bgColor = 'bg-blue-500/95';
+    borderColor = 'border-blue-400';
+    iconColor = 'text-white';
+  }
+  
   return (
-    <div className="toast-notification p-3 bg-card border border-border rounded shadow flex items-center gap-3">
-      <div className="w-6 h-6"><IconForType type={type} /></div>
-      <div>{message}</div>
+    <div className={`toast-notification p-4 ${bgColor} border-2 ${borderColor} ${iconColor} rounded-lg shadow-2xl flex items-center gap-3 min-w-[320px] backdrop-blur-sm animate-slideIn`}>
+      <div className="w-6 h-6 flex-shrink-0"><IconForType type={type} /></div>
+      <div className="flex-1 font-medium">{message}</div>
     </div>
   );
 }

@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: campusone-api
+    env: node
+    branch: master
+    root: server
+    buildCommand: ""
+    startCommand: "npm start"
+    plan: starter
+
+  - type: static
+    name: campusone-frontend
+    env: static
+    branch: master
+    root: .
+    buildCommand: "npm run build"
+    publishPath: "dist"
+    plan: starter

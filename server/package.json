@@ -18,6 +18,8 @@
     "mongoose": "^8.0.3",
     "react-router-dom": "^7.9.5",
     "socket.io": "^4.7.5",
+    "redis": "^4.6.7",
+    "@socket.io/redis-adapter": "^7.1.0",
     "zustand": "^5.0.8"
   },
   "devDependencies": {

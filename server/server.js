@@ -53,6 +53,27 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*'} });
 app.set('io', io);
 
+// If REDIS_URL is provided, configure the Socket.IO Redis adapter so the socket
+// layer can scale across multiple instances. This is optional and only runs
+// when REDIS_URL exists in the environment.
+if (process.env.REDIS_URL) {
+  try {
+    const { createAdapter } = require('@socket.io/redis-adapter');
+    const { createClient } = require('redis');
+
+    (async () => {
+      const pubClient = createClient({ url: process.env.REDIS_URL });
+      const subClient = pubClient.duplicate();
+      await pubClient.connect();
+      await subClient.connect();
+      io.adapter(createAdapter(pubClient, subClient));
+      console.log('Socket.IO Redis adapter configured');
+    })();
+  } catch (err) {
+    console.error('Failed to configure Redis adapter for Socket.IO:', err);
+  }
+}
+
 io.on('connection', (socket) => {
   socket.on('joinConversation', ({ conversationId }) => {
     if (conversationId) socket.join(conversationId);

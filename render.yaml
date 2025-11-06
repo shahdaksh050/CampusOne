@@ -1,18 +1,8 @@
 services:
   - type: web
-    name: campusone-api
+    name: campusone-fullstack
     env: node
     branch: master
-    root: server
-    buildCommand: ""
-    startCommand: "npm start"
-    plan: starter
-
-  - type: static
-    name: campusone-frontend
-    env: static
-    branch: master
-    root: .
-    buildCommand: "npm run build"
-    publishPath: "dist"
+    buildCommand: "npm install && npm run build && cd server && npm install"
+    startCommand: "cd server && npm start"
     plan: starter

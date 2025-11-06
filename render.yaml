@@ -3,6 +3,6 @@ services:
     name: campusone-fullstack
     env: node
     branch: master
-    buildCommand: "npm ci && npm run build && cd server && npm ci"
+    buildCommand: "npm ci --include=dev && npm run build && cd server && npm ci --omit=dev"
     startCommand: "cd server && npm start"
     plan: starter

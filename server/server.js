@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const admin = require('firebase-admin');
 const http = require('http');
 const path = require('path');
+const fs = require('fs');
 const { Server } = require('socket.io');
 
 // Load environment variables
@@ -117,13 +118,22 @@ app.get('/api/health', (req, res) => {
 
 // Serve static files from the React app (production build)
 const distPath = path.join(__dirname, '../dist');
-app.use(express.static(distPath));
+const hasFrontendBuild = fs.existsSync(path.join(distPath, 'index.html'));
+if (hasFrontendBuild) {
+  app.use(express.static(distPath));
+} else {
+  console.warn(`Frontend build not found at ${path.join(distPath, 'index.html')}. Serving API only.`);
+}
 
 // SPA fallback - serve index.html for all non-API routes
 app.get('*', (req, res) => {
   // Only serve index.html for non-API routes
   if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(distPath, 'index.html'));
+    if (hasFrontendBuild) {
+      res.sendFile(path.join(distPath, 'index.html'));
+    } else {
+      res.status(503).send('Frontend build not found. Please try again in a minute while the build completes.');
+    }
   } else {
     res.status(404).json({ message: 'API route not found' });
   }
